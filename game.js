@@ -29,8 +29,11 @@ const els = {
   board: document.querySelector("#board"),
   landlordArea: document.querySelector("#landlordArea"),
   lastPlay: document.querySelector("#lastPlay"),
+  playHint: document.querySelector("#playHint"),
   passBtn: document.querySelector("#passBtn"),
+  opponentRole: document.querySelector("#opponentRole"),
   opponentCount: document.querySelector("#opponentCount"),
+  myRole: document.querySelector("#myRole"),
   myCount: document.querySelector("#myCount"),
   hand: document.querySelector("#hand"),
   playCardsBtn: document.querySelector("#playCardsBtn"),
@@ -285,9 +288,12 @@ function sortCards(cards) {
 function renderLandlord() {
   const myHand = landlord.hands[myColor] || [];
   const opponentColor = myColor === "black" ? "white" : "black";
-  els.myCount.textContent = `你 ${myHand.length} 张`;
-  els.opponentCount.textContent = `对方 ${(landlord.hands[opponentColor] || []).length} 张`;
+  els.myRole.textContent = myColor === "black" ? "你 · 地主" : "你 · 农民";
+  els.opponentRole.textContent = opponentColor === "black" ? "对方 · 地主" : "对方 · 农民";
+  els.myCount.textContent = `${myHand.length} 张`;
+  els.opponentCount.textContent = `${(landlord.hands[opponentColor] || []).length} 张`;
   els.lastPlay.textContent = landlord.lastPlay ? `${landlord.lastPlay.owner === myColor ? "你" : "对方"}：${landlord.lastPlay.cards.map((card) => card.label).join(" ")}` : "还没人出牌";
+  els.playHint.textContent = landlord.lastPlay ? playName(landlord.lastPlay.play) : "本轮自由出牌";
   els.hand.innerHTML = "";
 
   for (const card of myHand) {
@@ -374,11 +380,35 @@ function classifyCards(cards) {
   if (cards.length === 2 && values[0] === 17 && values[1] === 18) return { type: "rocket", value: 99, length: 2 };
   if (cards.length === 3 && unique.length === 1) return { type: "triple", value: unique[0], length: 3 };
   if (cards.length === 4 && unique.length === 1) return { type: "bomb", value: unique[0], length: 4 };
+  const triples = unique.filter((value) => counts.get(value) === 3);
+  const pairs = unique.filter((value) => counts.get(value) === 2);
+  const singles = unique.filter((value) => counts.get(value) === 1);
+  if (cards.length === 4 && triples.length === 1) return { type: "triple_single", value: triples[0], length: 4 };
+  if (cards.length === 5 && triples.length === 1 && pairs.length === 1) return { type: "triple_pair", value: triples[0], length: 5 };
   if (cards.length >= 5 && unique.length === cards.length && unique.every((value) => value < 15)) {
     const straight = unique.every((value, index) => index === 0 || value === unique[index - 1] + 1);
     if (straight) return { type: "straight", value: unique.at(-1), length: cards.length };
   }
+  if (cards.length >= 6 && cards.length % 2 === 0 && pairs.length === unique.length && unique.every((value) => value < 15)) {
+    const pairRun = unique.every((value, index) => index === 0 || value === unique[index - 1] + 1);
+    if (pairRun) return { type: "pair_straight", value: unique.at(-1), length: cards.length };
+  }
+  if (triples.length >= 2 && triples.every((value) => value < 15) && isConsecutive(triples)) {
+    const tripleCount = triples.length;
+    if (cards.length === tripleCount * 3) return { type: "airplane", value: triples.at(-1), length: cards.length, chains: tripleCount };
+    if (cards.length === tripleCount * 4 && singles.length === tripleCount) {
+      return { type: "airplane_single", value: triples.at(-1), length: cards.length, chains: tripleCount };
+    }
+    if (cards.length === tripleCount * 5 && pairs.length === tripleCount) {
+      return { type: "airplane_pair", value: triples.at(-1), length: cards.length, chains: tripleCount };
+    }
+  }
   return null;
+}
+
+function isConsecutive(values) {
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted.every((value, index) => index === 0 || value === sorted[index - 1] + 1);
 }
 
 function beats(next, previous) {
@@ -387,7 +417,28 @@ function beats(next, previous) {
   if (previous.type === "rocket") return false;
   if (next.type === "bomb" && previous.type !== "bomb") return true;
   if (next.type !== previous.type || next.length !== previous.length) return false;
+  if (next.chains && previous.chains && next.chains !== previous.chains) return false;
   return next.value > previous.value;
+}
+
+function playName(play) {
+  if (!play) return "未知牌型";
+  const names = {
+    single: "单张",
+    pair: "对子",
+    triple: "三张",
+    triple_single: "三带一",
+    triple_pair: "三带二",
+    straight: "顺子",
+    pair_straight: "连对",
+    airplane: "飞机",
+    airplane_single: "飞机带单",
+    airplane_pair: "飞机带对",
+    bomb: "炸弹",
+    rocket: "王炸",
+    admin: "管理员出牌",
+  };
+  return names[play.type] || "未知牌型";
 }
 
 function sendMessage(message) {
