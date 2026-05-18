@@ -3,6 +3,7 @@ const WIN_COUNT = 5;
 const ROOM_PREFIX = "love-games-";
 const ADMIN_CODE = "1115";
 const CARD_ASSET_BASE = "https://webisso.github.io/playing-cards";
+const BGM_URL = "https://opengameart.org/sites/default/files/happy%20loop_0.mp3";
 const params = new URLSearchParams(location.search);
 
 let lastTouchEnd = 0;
@@ -45,6 +46,7 @@ const els = {
   lastPlay: document.querySelector("#lastPlay"),
   playHint: document.querySelector("#playHint"),
   passBtn: document.querySelector("#passBtn"),
+  bgmBtn: document.querySelector("#bgmBtn"),
   opponentRole: document.querySelector("#opponentRole"),
   opponentCount: document.querySelector("#opponentCount"),
   myRole: document.querySelector("#myRole"),
@@ -72,6 +74,9 @@ let adminQuota = 1;
 let placedThisTurn = 0;
 let adminUnlocked = false;
 let toastTimer = 0;
+let audioContext = null;
+let bgmAudio = null;
+let bgmOn = false;
 
 const gobang = {
   board: createEmptyBoard(),
@@ -102,6 +107,65 @@ function showToast(text) {
   els.toast.textContent = text;
   els.toast.classList.remove("hidden");
   toastTimer = setTimeout(() => els.toast.classList.add("hidden"), 1800);
+}
+
+function ensureAudioContext() {
+  const AudioCtor = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtor) return null;
+  if (!audioContext) audioContext = new AudioCtor();
+  if (audioContext.state === "suspended") audioContext.resume();
+  return audioContext;
+}
+
+function playTone(type = "tap") {
+  const ctx = ensureAudioContext();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const [frequency, duration, volume] = {
+    tap: [520, 0.035, 0.026],
+    select: [760, 0.045, 0.032],
+    play: [420, 0.09, 0.052],
+    pass: [220, 0.08, 0.038],
+    win: [880, 0.16, 0.06],
+  }[type];
+  osc.type = type === "pass" ? "triangle" : "sine";
+  osc.frequency.setValueAtTime(frequency, now);
+  if (type === "win") osc.frequency.exponentialRampToValueAtTime(1320, now + duration);
+  gain.gain.setValueAtTime(volume, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + duration + 0.02);
+}
+
+function ensureBgm() {
+  if (!bgmAudio) {
+    bgmAudio = new Audio(BGM_URL);
+    bgmAudio.loop = true;
+    bgmAudio.volume = 0.24;
+    bgmAudio.preload = "auto";
+  }
+  return bgmAudio;
+}
+
+async function toggleBgm() {
+  const audio = ensureBgm();
+  try {
+    if (bgmOn) {
+      audio.pause();
+      bgmOn = false;
+    } else {
+      ensureAudioContext();
+      await audio.play();
+      bgmOn = true;
+    }
+    els.bgmBtn.classList.toggle("active", bgmOn);
+  } catch {
+    showToast("音乐加载失败，稍后再试");
+  }
 }
 
 function setLobbyStatus(text) {
@@ -387,6 +451,7 @@ function isRedCard(card) {
 }
 
 function toggleCard(id) {
+  playTone("select");
   const index = landlord.selectedIds.indexOf(id);
   if (index >= 0) {
     landlord.selectedIds.splice(index, 1);
@@ -421,6 +486,7 @@ function playSelectedCards() {
   landlord.selectedIds = [];
   landlord.passCount = 0;
   landlord.winner = landlord.hands[myColor].length === 0 ? myColor : null;
+  playTone(landlord.winner ? "win" : "play");
   landlord.turn = myColor === "black" ? "white" : "black";
   sendState();
   render();
@@ -432,6 +498,7 @@ function passLandlord() {
   if (landlord.turn !== myColor) return showToast("还没轮到你");
   if (!landlord.lastPlay || landlord.lastPlay.owner === myColor) return showToast("你现在需要出牌");
   landlord.selectedIds = [];
+  playTone("pass");
   landlord.passCount += 1;
   landlord.turn = landlord.lastPlay.owner;
   landlord.lastPlay = null;
@@ -688,6 +755,7 @@ function unlockAdmin() {
   els.adminPanel.classList.remove("hidden");
   render();
   showToast("管理员已开启");
+  playTone("win");
 }
 
 function openAdminModal() {
@@ -720,7 +788,9 @@ els.minusQuotaBtn.addEventListener("click", () => changeQuota(-1));
 els.plusQuotaBtn.addEventListener("click", () => changeQuota(1));
 els.playCardsBtn.addEventListener("click", playSelectedCards);
 els.passBtn.addEventListener("click", passLandlord);
+els.bgmBtn.addEventListener("click", toggleBgm);
 els.clearSelectionBtn.addEventListener("click", () => {
+  playTone("tap");
   landlord.selectedIds = [];
   render();
 });

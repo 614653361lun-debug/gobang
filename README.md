@@ -26,3 +26,8 @@
 
 - https://webisso.github.io/playing-cards/
 - License: MIT
+
+斗地主音乐使用 OpenGameArt 的 Happy Loop：
+
+- https://opengameart.org/content/happy-loop
+- License: CC0 / Public Domain
