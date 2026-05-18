@@ -9,6 +9,7 @@ const els = {
   gameScreen: document.querySelector("#gameScreen"),
   gameChoices: document.querySelectorAll(".game-choice"),
   createRoomBtn: document.querySelector("#createRoomBtn"),
+  createLandlordRoomBtn: document.querySelector("#createLandlordRoomBtn"),
   joinRoomBtn: document.querySelector("#joinRoomBtn"),
   roomInput: document.querySelector("#roomInput"),
   lobbyStatus: document.querySelector("#lobbyStatus"),
@@ -547,6 +548,10 @@ function unlockAdmin() {
 
 els.gameChoices.forEach((button) => button.addEventListener("click", () => setSelectedGame(button.dataset.game)));
 els.createRoomBtn.addEventListener("click", createRoom);
+els.createLandlordRoomBtn.addEventListener("click", () => {
+  setSelectedGame("landlord");
+  createRoom();
+});
 els.joinRoomBtn.addEventListener("click", () => joinRoom(els.roomInput.value));
 els.copyInviteBtn.addEventListener("click", copyInvite);
 els.secretAdminBtn.addEventListener("click", unlockAdmin);

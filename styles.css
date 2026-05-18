@@ -183,6 +183,10 @@ input:focus {
   background: var(--accent);
 }
 
+.alt-btn {
+  background: #2e5fa8;
+}
+
 .secondary-btn {
   color: var(--ink);
   background: #ead6b6;
