@@ -309,7 +309,7 @@ function renderLandlord() {
     button.className = `card ${isRedCard(card) ? "red" : ""}`;
     button.classList.toggle("selected", landlord.selectedIds.includes(card.id));
     button.title = card.label;
-    button.appendChild(createCardImage(card));
+    button.appendChild(createCardImage(card, button));
     const fallback = document.createElement("span");
     fallback.textContent = card.label;
     button.appendChild(fallback);
@@ -337,18 +337,32 @@ function renderLastPlay() {
   for (const card of landlord.lastPlay.cards) {
     const cardWrap = document.createElement("span");
     cardWrap.className = "table-card";
-    cardWrap.appendChild(createCardImage(card));
+    cardWrap.appendChild(createCardImage(card, cardWrap));
+    const fallback = document.createElement("span");
+    fallback.textContent = card.label;
+    cardWrap.appendChild(fallback);
     els.lastPlay.appendChild(cardWrap);
   }
 }
 
-function createCardImage(card) {
+function createCardImage(card, ownerEl) {
   const img = document.createElement("img");
-  img.src = card.image || "";
+  img.src = getCardImage(card);
   img.alt = card.label;
   img.loading = "lazy";
   img.draggable = false;
+  img.onerror = () => {
+    img.hidden = true;
+    if (ownerEl) ownerEl.classList.add("image-failed");
+  };
   return img;
+}
+
+function getCardImage(card) {
+  if (card.image) return card.image;
+  if (card.id === "joker-small" || card.rank === "小王") return `${CARD_ASSET_BASE}/png/black_joker.png`;
+  if (card.id === "joker-big" || card.rank === "大王") return `${CARD_ASSET_BASE}/png/red_joker.png`;
+  return cardImageUrl(card.suit, card.rank);
 }
 
 function isRedCard(card) {

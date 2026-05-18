@@ -417,10 +417,16 @@ input:focus {
 }
 
 .table-card {
-  width: 34px;
+  width: 42px;
   aspect-ratio: 5 / 7;
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 4px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 900;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.24);
   overflow: hidden;
 }
@@ -429,6 +435,14 @@ input:focus {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.table-card span {
+  display: none;
+}
+
+.table-card.image-failed span {
+  display: block;
 }
 
 .play-hint {
@@ -515,6 +529,16 @@ input:focus {
 
 .card span {
   display: none;
+}
+
+.card.image-failed {
+  display: grid;
+  place-items: center;
+  padding: 3px;
+}
+
+.card.image-failed span {
+  display: block;
 }
 
 .card.selected {
