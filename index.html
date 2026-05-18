@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#f4d58d" />
-    <title>双人五子棋</title>
+    <title>双人小游戏</title>
     <link rel="stylesheet" href="./styles.css" />
     <script defer src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <script defer src="./game.js"></script>
@@ -14,8 +14,19 @@
       <section id="lobby" class="screen lobby-screen">
         <div class="title-block">
           <p class="eyebrow">微信双人对战</p>
-          <h1>五子棋</h1>
-          <p class="subtitle">黑棋创建房间，白棋打开邀请链接加入。</p>
+          <h1>双人小游戏</h1>
+          <p class="subtitle">选一个游戏，创建房间后把链接发给她。</p>
+        </div>
+
+        <div class="game-picker" aria-label="选择游戏">
+          <button class="game-choice active" type="button" data-game="gobang">
+            <strong>五子棋</strong>
+            <small>黑白棋盘对战</small>
+          </button>
+          <button class="game-choice" type="button" data-game="landlord">
+            <strong>双人斗地主</strong>
+            <small>出牌、接牌、跳过</small>
+          </button>
         </div>
 
         <div class="panel">
@@ -42,7 +53,7 @@
           </div>
         </header>
 
-        <div class="score-row">
+        <div id="gobangMeta" class="score-row">
           <div class="stone-card black-card">
             <span class="stone black"></span>
             <div>
@@ -62,7 +73,7 @@
         <section id="adminPanel" class="admin-panel hidden">
           <div>
             <p class="eyebrow">管理员</p>
-            <strong>本回合下棋数量</strong>
+            <strong id="adminTitle">本回合下棋数量</strong>
           </div>
           <div class="quota-control">
             <button id="minusQuotaBtn" type="button" aria-label="减少">−</button>
@@ -71,9 +82,31 @@
           </div>
         </section>
 
-        <div class="board-wrap">
+        <div id="gobangArea" class="board-wrap">
           <div id="board" class="board" aria-label="五子棋棋盘"></div>
         </div>
+
+        <section id="landlordArea" class="landlord-area hidden">
+          <div class="play-table">
+            <div>
+              <p class="eyebrow">上一手</p>
+              <div id="lastPlay" class="last-play">还没人出牌</div>
+            </div>
+            <button id="passBtn" class="secondary-btn" type="button">不要</button>
+          </div>
+
+          <div class="hand-info">
+            <span id="opponentCount">对方 0 张</span>
+            <span id="myCount">你 0 张</span>
+          </div>
+
+          <div id="hand" class="hand" aria-label="你的手牌"></div>
+
+          <div class="card-actions">
+            <button id="playCardsBtn" class="primary-btn" type="button">出牌</button>
+            <button id="clearSelectionBtn" class="ghost-btn" type="button">取消选择</button>
+          </div>
+        </section>
 
         <footer class="actions">
           <button id="restartBtn" class="secondary-btn" type="button">重新开始</button>

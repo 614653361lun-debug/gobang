@@ -87,7 +87,9 @@ small {
 }
 
 .panel,
-.admin-panel {
+.admin-panel,
+.game-picker,
+.landlord-area {
   padding: 16px;
   border: 1px solid rgba(143, 100, 45, 0.28);
   border-radius: 8px;
@@ -98,6 +100,38 @@ small {
 .panel {
   display: grid;
   gap: 12px;
+}
+
+.game-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.game-choice {
+  min-height: 82px;
+  border: 1px solid rgba(143, 100, 45, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--ink);
+  background: #fffdf8;
+  text-align: left;
+  cursor: pointer;
+}
+
+.game-choice strong,
+.game-choice small {
+  display: block;
+}
+
+.game-choice small {
+  margin-top: 5px;
+}
+
+.game-choice.active {
+  border-color: var(--accent);
+  background: rgba(47, 111, 115, 0.12);
+  box-shadow: 0 0 0 3px rgba(47, 111, 115, 0.1);
 }
 
 .join-field {
@@ -326,6 +360,80 @@ input:focus {
 .actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
+}
+
+.landlord-area {
+  display: grid;
+  gap: 12px;
+}
+
+.play-table {
+  min-height: 86px;
+  display: grid;
+  grid-template-columns: 1fr 86px;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(47, 111, 115, 0.09);
+}
+
+.last-play {
+  margin-top: 7px;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.hand-info {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.hand {
+  min-height: 188px;
+  display: flex;
+  align-content: flex-start;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px 6px;
+  padding: 8px 0;
+}
+
+.card {
+  width: 43px;
+  height: 62px;
+  border: 1px solid rgba(31, 26, 20, 0.18);
+  border-radius: 7px;
+  background: #fffdf8;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 900;
+  box-shadow: 0 3px 8px rgba(66, 42, 14, 0.14);
+  cursor: pointer;
+}
+
+.card.red {
+  color: #b92828;
+}
+
+.card.selected {
+  transform: translateY(-10px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 15px rgba(47, 111, 115, 0.2);
+}
+
+.card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
 .status {
