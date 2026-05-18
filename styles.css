@@ -575,6 +575,37 @@ input:focus {
   z-index: 10;
 }
 
+.modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(31, 26, 20, 0.45);
+  z-index: 20;
+}
+
+.modal-panel {
+  width: min(100%, 340px);
+  display: grid;
+  gap: 13px;
+  padding: 18px;
+  border-radius: 8px;
+  background: #fff8ed;
+  box-shadow: 0 20px 44px rgba(31, 26, 20, 0.25);
+}
+
+.modal-panel h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
 @media (max-width: 370px) {
   .app {
     padding-left: 10px;

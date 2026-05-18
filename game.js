@@ -39,6 +39,10 @@ const els = {
   hand: document.querySelector("#hand"),
   playCardsBtn: document.querySelector("#playCardsBtn"),
   clearSelectionBtn: document.querySelector("#clearSelectionBtn"),
+  adminModal: document.querySelector("#adminModal"),
+  adminCodeInput: document.querySelector("#adminCodeInput"),
+  adminCancelBtn: document.querySelector("#adminCancelBtn"),
+  adminConfirmBtn: document.querySelector("#adminConfirmBtn"),
   restartBtn: document.querySelector("#restartBtn"),
   leaveBtn: document.querySelector("#leaveBtn"),
   gameStatus: document.querySelector("#gameStatus"),
@@ -664,12 +668,23 @@ function changeQuota(delta) {
 }
 
 function unlockAdmin() {
-  const code = window.prompt("输入管理员密码");
+  const code = els.adminCodeInput.value.trim();
   if (code !== ADMIN_CODE) return showToast("密码错误");
   adminUnlocked = true;
+  closeAdminModal();
   els.adminPanel.classList.remove("hidden");
   render();
   showToast("管理员已开启");
+}
+
+function openAdminModal() {
+  els.adminCodeInput.value = "";
+  els.adminModal.classList.remove("hidden");
+  setTimeout(() => els.adminCodeInput.focus(), 50);
+}
+
+function closeAdminModal() {
+  els.adminModal.classList.add("hidden");
 }
 
 els.gameChoices.forEach((button) => button.addEventListener("click", () => setSelectedGame(button.dataset.game)));
@@ -680,7 +695,12 @@ els.createLandlordRoomBtn.addEventListener("click", () => {
 });
 els.joinRoomBtn.addEventListener("click", () => joinRoom(els.roomInput.value));
 els.copyInviteBtn.addEventListener("click", copyInvite);
-els.secretAdminBtn.addEventListener("click", unlockAdmin);
+els.secretAdminBtn.addEventListener("click", openAdminModal);
+els.adminCancelBtn.addEventListener("click", closeAdminModal);
+els.adminConfirmBtn.addEventListener("click", unlockAdmin);
+els.adminCodeInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") unlockAdmin();
+});
 els.restartBtn.addEventListener("click", restartGame);
 els.leaveBtn.addEventListener("click", leaveGame);
 els.minusQuotaBtn.addEventListener("click", () => changeQuota(-1));
