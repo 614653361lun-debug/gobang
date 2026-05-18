@@ -18,6 +18,7 @@
 html,
 body {
   min-height: 100%;
+  touch-action: manipulation;
 }
 
 body {
@@ -35,6 +36,18 @@ input {
 
 button {
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.board,
+.landlord-area,
+.hand,
+.card,
+.cell {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .app {

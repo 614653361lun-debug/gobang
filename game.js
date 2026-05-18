@@ -5,6 +5,19 @@ const ADMIN_CODE = "1115";
 const CARD_ASSET_BASE = "https://webisso.github.io/playing-cards";
 const params = new URLSearchParams(location.search);
 
+let lastTouchEnd = 0;
+document.addEventListener(
+  "touchend",
+  (event) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 320) {
+      event.preventDefault();
+    }
+    lastTouchEnd = now;
+  },
+  { passive: false },
+);
+
 const els = {
   lobby: document.querySelector("#lobby"),
   gameScreen: document.querySelector("#gameScreen"),
