@@ -19,3 +19,10 @@
 - 右上角小圆点是隐藏管理员入口，输入 `1115` 可开启突破限制。
 - 五子棋管理员可以设置本回合下几颗。
 - 斗地主管理员可以无视牌型和大小，想出什么牌就出什么牌。
+
+## 素材
+
+斗地主牌面使用 Webisso Playing Cards 开源素材：
+
+- https://webisso.github.io/playing-cards/
+- License: MIT

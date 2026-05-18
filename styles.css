@@ -405,9 +405,30 @@ input:focus {
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 3px;
   color: #fff7da;
   font-weight: 800;
+}
+
+.play-owner {
+  width: 100%;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+}
+
+.table-card {
+  width: 34px;
+  aspect-ratio: 5 / 7;
+  display: inline-flex;
+  border-radius: 4px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.24);
+  overflow: hidden;
+}
+
+.table-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .play-hint {
@@ -465,13 +486,14 @@ input:focus {
 }
 
 .card {
-  width: 42px;
-  height: 60px;
+  width: 48px;
+  height: 67px;
   border: 1px solid rgba(31, 26, 20, 0.18);
   border-radius: 6px;
-  margin-right: -9px;
-  background:
-    linear-gradient(145deg, #ffffff 0%, #fff8eb 100%);
+  margin-right: -12px;
+  padding: 0;
+  overflow: hidden;
+  background: #fff;
   color: var(--ink);
   font-size: 14px;
   font-weight: 900;
@@ -481,6 +503,18 @@ input:focus {
 
 .card.red {
   color: #b92828;
+}
+
+.card img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.card span {
+  display: none;
 }
 
 .card.selected {

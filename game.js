@@ -2,6 +2,7 @@ const BOARD_SIZE = 15;
 const WIN_COUNT = 5;
 const ROOM_PREFIX = "love-games-";
 const ADMIN_CODE = "1115";
+const CARD_ASSET_BASE = "https://webisso.github.io/playing-cards";
 const params = new URLSearchParams(location.search);
 
 const els = {
@@ -260,16 +261,22 @@ function createDeck() {
   const deck = [];
   for (const [rank, value] of ranks) {
     for (const suit of suits) {
-      deck.push({ id: `${suit}${rank}`, suit, rank, value, label: `${rank}${suitLabel(suit)}` });
+      deck.push({ id: `${suit}${rank}`, suit, rank, value, label: `${rank}${suitLabel(suit)}`, image: cardImageUrl(suit, rank) });
     }
   }
-  deck.push({ id: "joker-small", suit: "J", rank: "小王", value: 17, label: "小王" });
-  deck.push({ id: "joker-big", suit: "J", rank: "大王", value: 18, label: "大王" });
+  deck.push({ id: "joker-small", suit: "J", rank: "小王", value: 17, label: "小王", image: `${CARD_ASSET_BASE}/png/black_joker.png` });
+  deck.push({ id: "joker-big", suit: "J", rank: "大王", value: 18, label: "大王", image: `${CARD_ASSET_BASE}/png/red_joker.png` });
   return deck;
 }
 
 function suitLabel(suit) {
   return { S: "♠", H: "♥", C: "♣", D: "♦" }[suit];
+}
+
+function cardImageUrl(suit, rank) {
+  const suitName = { S: "spades", H: "hearts", C: "clubs", D: "diamonds" }[suit];
+  const rankName = { A: "ace", J: "jack", Q: "queen", K: "king" }[rank] || String(rank);
+  return `${CARD_ASSET_BASE}/png/${rankName}_of_${suitName}.png`;
 }
 
 function shuffle(cards) {
@@ -292,7 +299,7 @@ function renderLandlord() {
   els.opponentRole.textContent = opponentColor === "black" ? "对方 · 地主" : "对方 · 农民";
   els.myCount.textContent = `${myHand.length} 张`;
   els.opponentCount.textContent = `${(landlord.hands[opponentColor] || []).length} 张`;
-  els.lastPlay.textContent = landlord.lastPlay ? `${landlord.lastPlay.owner === myColor ? "你" : "对方"}：${landlord.lastPlay.cards.map((card) => card.label).join(" ")}` : "还没人出牌";
+  renderLastPlay();
   els.playHint.textContent = landlord.lastPlay ? playName(landlord.lastPlay.play) : "本轮自由出牌";
   els.hand.innerHTML = "";
 
@@ -301,7 +308,11 @@ function renderLandlord() {
     button.type = "button";
     button.className = `card ${isRedCard(card) ? "red" : ""}`;
     button.classList.toggle("selected", landlord.selectedIds.includes(card.id));
-    button.textContent = card.label;
+    button.title = card.label;
+    button.appendChild(createCardImage(card));
+    const fallback = document.createElement("span");
+    fallback.textContent = card.label;
+    button.appendChild(fallback);
     button.addEventListener("click", () => toggleCard(card.id));
     els.hand.appendChild(button);
   }
@@ -311,6 +322,33 @@ function renderLandlord() {
   } else {
     renderHeader(landlord.turn === myColor ? "你的回合" : "等对方出牌");
   }
+}
+
+function renderLastPlay() {
+  els.lastPlay.innerHTML = "";
+  if (!landlord.lastPlay) {
+    els.lastPlay.textContent = "还没人出牌";
+    return;
+  }
+  const owner = document.createElement("span");
+  owner.className = "play-owner";
+  owner.textContent = `${landlord.lastPlay.owner === myColor ? "你" : "对方"}：`;
+  els.lastPlay.appendChild(owner);
+  for (const card of landlord.lastPlay.cards) {
+    const cardWrap = document.createElement("span");
+    cardWrap.className = "table-card";
+    cardWrap.appendChild(createCardImage(card));
+    els.lastPlay.appendChild(cardWrap);
+  }
+}
+
+function createCardImage(card) {
+  const img = document.createElement("img");
+  img.src = card.image || "";
+  img.alt = card.label;
+  img.loading = "lazy";
+  img.draggable = false;
+  return img;
 }
 
 function isRedCard(card) {
@@ -375,41 +413,63 @@ function classifyCards(cards) {
   const counts = new Map();
   values.forEach((value) => counts.set(value, (counts.get(value) || 0) + 1));
   const unique = [...counts.keys()].sort((a, b) => a - b);
+  const pairChains = findChains(unique.filter((value) => counts.get(value) >= 2 && value < 15), 3);
+  const tripleChains = findChains(unique.filter((value) => counts.get(value) >= 3 && value < 15), 2);
+
   if (cards.length === 1) return { type: "single", value: values[0], length: 1 };
   if (cards.length === 2 && unique.length === 1) return { type: "pair", value: unique[0], length: 2 };
   if (cards.length === 2 && values[0] === 17 && values[1] === 18) return { type: "rocket", value: 99, length: 2 };
   if (cards.length === 3 && unique.length === 1) return { type: "triple", value: unique[0], length: 3 };
   if (cards.length === 4 && unique.length === 1) return { type: "bomb", value: unique[0], length: 4 };
-  const triples = unique.filter((value) => counts.get(value) === 3);
-  const pairs = unique.filter((value) => counts.get(value) === 2);
-  const singles = unique.filter((value) => counts.get(value) === 1);
+
+  for (const chain of tripleChains) {
+    const chainLength = chain.length;
+    const high = chain.at(-1);
+    if (cards.length === chainLength * 3) return { type: "airplane", value: high, length: cards.length, chains: chainLength };
+    if (cards.length === chainLength * 4) return { type: "airplane_single", value: high, length: cards.length, chains: chainLength };
+    if (cards.length === chainLength * 5) return { type: "airplane_pair", value: high, length: cards.length, chains: chainLength };
+  }
+
   const tripleMain = unique.find((value) => counts.get(value) >= 3);
   if (cards.length === 4 && tripleMain) return { type: "triple_single", value: tripleMain, length: 4 };
   if (cards.length === 5 && tripleMain) return { type: "triple_pair", value: tripleMain, length: 5 };
+
   if (cards.length >= 5 && unique.length === cards.length && unique.every((value) => value < 15)) {
     const straight = unique.every((value, index) => index === 0 || value === unique[index - 1] + 1);
     if (straight) return { type: "straight", value: unique.at(-1), length: cards.length };
   }
-  if (cards.length >= 6 && cards.length % 2 === 0 && pairs.length === unique.length && unique.every((value) => value < 15)) {
-    const pairRun = unique.every((value, index) => index === 0 || value === unique[index - 1] + 1);
-    if (pairRun) return { type: "pair_straight", value: unique.at(-1), length: cards.length };
-  }
-  if (triples.length >= 2 && triples.every((value) => value < 15) && isConsecutive(triples)) {
-    const tripleCount = triples.length;
-    if (cards.length === tripleCount * 3) return { type: "airplane", value: triples.at(-1), length: cards.length, chains: tripleCount };
-    if (cards.length === tripleCount * 4 && singles.length === tripleCount) {
-      return { type: "airplane_single", value: triples.at(-1), length: cards.length, chains: tripleCount };
-    }
-    if (cards.length === tripleCount * 5 && pairs.length === tripleCount) {
-      return { type: "airplane_pair", value: triples.at(-1), length: cards.length, chains: tripleCount };
+
+  for (const chain of pairChains) {
+    if (cards.length === chain.length * 2) {
+      return { type: "pair_straight", value: chain.at(-1), length: cards.length, chains: chain.length };
     }
   }
   return null;
 }
 
-function isConsecutive(values) {
-  const sorted = [...values].sort((a, b) => a - b);
-  return sorted.every((value, index) => index === 0 || value === sorted[index - 1] + 1);
+function findChains(values, minLength) {
+  const sorted = [...new Set(values)].sort((a, b) => a - b);
+  const chains = [];
+  let current = [];
+  for (const value of sorted) {
+    if (!current.length || value === current.at(-1) + 1) {
+      current.push(value);
+    } else {
+      addChainVariants(chains, current, minLength);
+      current = [value];
+    }
+  }
+  addChainVariants(chains, current, minLength);
+  return chains.sort((a, b) => b.length - a.length || b.at(-1) - a.at(-1));
+}
+
+function addChainVariants(chains, chain, minLength) {
+  if (chain.length < minLength) return;
+  for (let length = chain.length; length >= minLength; length -= 1) {
+    for (let start = 0; start <= chain.length - length; start += 1) {
+      chains.push(chain.slice(start, start + length));
+    }
+  }
 }
 
 function beats(next, previous) {
