@@ -383,8 +383,9 @@ function classifyCards(cards) {
   const triples = unique.filter((value) => counts.get(value) === 3);
   const pairs = unique.filter((value) => counts.get(value) === 2);
   const singles = unique.filter((value) => counts.get(value) === 1);
-  if (cards.length === 4 && triples.length === 1) return { type: "triple_single", value: triples[0], length: 4 };
-  if (cards.length === 5 && triples.length === 1) return { type: "triple_pair", value: triples[0], length: 5 };
+  const tripleMain = unique.find((value) => counts.get(value) >= 3);
+  if (cards.length === 4 && tripleMain) return { type: "triple_single", value: tripleMain, length: 4 };
+  if (cards.length === 5 && tripleMain) return { type: "triple_pair", value: tripleMain, length: 5 };
   if (cards.length >= 5 && unique.length === cards.length && unique.every((value) => value < 15)) {
     const straight = unique.every((value, index) => index === 0 || value === unique[index - 1] + 1);
     if (straight) return { type: "straight", value: unique.at(-1), length: cards.length };
