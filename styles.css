@@ -109,7 +109,7 @@ small {
 }
 
 .game-choice {
-  min-height: 82px;
+  min-height: 116px;
   border: 1px solid rgba(143, 100, 45, 0.3);
   border-radius: 8px;
   padding: 12px;
@@ -120,12 +120,20 @@ small {
 }
 
 .game-choice strong,
-.game-choice small {
+.game-choice small,
+.game-choice span {
   display: block;
 }
 
 .game-choice small {
   margin-top: 5px;
+}
+
+.game-choice span {
+  margin-top: 12px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 900;
 }
 
 .game-choice.active {

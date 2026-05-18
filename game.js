@@ -95,6 +95,7 @@ function setSelectedGame(game) {
   els.gameChoices.forEach((button) => {
     button.classList.toggle("active", button.dataset.game === game);
   });
+  els.createRoomBtn.textContent = game === "landlord" ? "创建斗地主房间" : "创建五子棋房间";
 }
 
 function openGameScreen() {
